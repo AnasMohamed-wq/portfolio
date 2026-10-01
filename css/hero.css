@@ -1,0 +1,434 @@
+/* ============================================================
+   Hero — Sylva "Living Green" moss scene + liquid-metal CTA
+   Visual layer ported from the authored ThreeUI inner-green-3d page.
+   Everything is scoped under .sylva-hero / .sylva-* so it never
+   leaks into the design system. Internal liquid class names stay
+   as the renderer selects them; CSS here just scopes and tunes.
+   ============================================================ */
+
+/* --u is scoped to the hero (never :root) so the scene's unit grid
+   cannot clobber design tokens elsewhere on the page. */
+.sylva-hero {
+  --u: calc(100vw / 1600);
+  --h: calc(60.156 * var(--u));
+}
+
+@media (min-width: 1900px) {
+  .sylva-hero {
+    --u: calc(1900px / 1600);
+  }
+}
+
+/* ---------- hero base ---------- */
+.sylva-hero {
+  position: relative;
+  width: 100%;
+  min-height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+  /* Static fallback / pre-boot paint: a deep forest gradient. When the
+     scene comes up the transparent canvas paints on top of it. */
+  background:
+    radial-gradient(
+      64% 52% at 27% 84%,
+      rgba(232, 238, 222, 0.06) 0%,
+      rgba(232, 238, 222, 0) 72%
+    ),
+    radial-gradient(
+      70% 60% at 92% 8%,
+      rgba(16, 34, 26, 0.35) 0%,
+      rgba(16, 34, 26, 0) 68%
+    ),
+    linear-gradient(
+      162deg,
+      var(--surface-deep) 0%,
+      var(--bg-deep) 55%,
+      var(--bg-deep) 100%
+    );
+}
+
+/* ---------- the composition sits on a centred 1600 × 880 stage ---------- */
+.sylva-stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: calc(-800 * var(--u));
+  margin-top: calc(-440 * var(--u));
+  width: calc(1600 * var(--u));
+  height: calc(880 * var(--u));
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ---------- three.js canvas (z 3, above veil, below content) ---------- */
+.sylva-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.9s var(--ease);
+}
+
+.sylva-hero.is-ready.sylva-scene .sylva-canvas {
+  opacity: 1;
+}
+
+/* ---------- legibility scrim + seam into the About paper ---------- */
+.sylva-hero__veil {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      96deg,
+      rgba(16, 34, 26, 0.66) 0%,
+      rgba(16, 34, 26, 0.34) 42%,
+      rgba(16, 34, 26, 0.08) 68%,
+      rgba(16, 34, 26, 0) 84%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(16, 34, 26, 0.34) 0%,
+      rgba(16, 34, 26, 0) 24%,
+      rgba(16, 34, 26, 0) 66%,
+      rgba(16, 34, 26, 0.46) 100%
+    );
+}
+
+.sylva-hero::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 64px;
+  z-index: 2;
+  background: linear-gradient(
+    180deg,
+    rgba(243, 248, 245, 0) 0%,
+    var(--paper) 100%
+  );
+  pointer-events: none;
+}
+
+/* ---------- hero content overlay ---------- */
+.sylva-hero__content {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 100svh;
+  padding-top: clamp(76px, 11vh, 130px);
+  padding-bottom: clamp(3rem, 7vh, 5rem);
+}
+
+.sylva-hero .hero__eyebrow {
+  color: var(--accent);
+}
+
+.sylva-hero .hero__title {
+  color: var(--text-on-dark);
+  font-weight: 300;
+  letter-spacing: -0.006em;
+}
+
+.sylva-hero .hero__role {
+  color: var(--accent);
+}
+
+.sylva-hero .hero__desc {
+  color: rgba(243, 248, 245, 0.82);
+  max-width: 46ch;
+}
+
+/* ---------- keywords: glass pills ---------- */
+.sylva-hero .hero__keywords {
+  gap: 0.6rem;
+}
+
+.sylva-hero .hero__keyword {
+  background: rgba(243, 248, 245, 0.09);
+  border: 1px solid rgba(243, 248, 245, 0.18);
+  color: var(--text-on-dark);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 0.42rem 0.95rem;
+}
+
+.sylva-hero .hero__keyword:hover {
+  color: var(--accent);
+  border-color: rgba(52, 209, 153, 0.5);
+  transform: translateY(-2px);
+}
+
+/* ---------- CTA row ---------- */
+.sylva-hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.1rem;
+  margin-top: 2rem;
+}
+
+.sylva-hero .btn--ghost {
+  color: var(--text-on-dark);
+  border-color: rgba(243, 248, 245, 0.34);
+  background: rgba(16, 34, 26, 0.28);
+  height: 54px;
+  padding: 0 1.6rem;
+  border-radius: var(--r-pill);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.sylva-hero .btn--ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   Liquid-metal CTA (ported, internal classes unchanged)
+   ========================================================================== */
+
+.liquid-stage {
+  --lu: calc(var(--h) / 516);
+  --bh: var(--h);
+  --pad: calc(900 * var(--lu));
+  position: relative;
+  width: max-content;
+  height: max-content;
+  padding: var(--pad);
+  display: grid;
+  place-items: center;
+  touch-action: manipulation;
+  font-family: var(--font);
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1;
+}
+
+/* Touch target floor: the authored pill scales with --u and would drop
+   under the 44px guidance on phones. */
+.liquid-stage--explore {
+  --h: max(calc(60.156 * var(--u)), 46px);
+}
+
+/* default (fallback) state: a plain accent pill the shader overrides */
+.liquid-stage .liquid-plate {
+  position: absolute;
+  inset: var(--pad);
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.085),
+      rgba(255, 255, 255, 0.014) 44%,
+      rgba(255, 255, 255, 0) 64%
+    ),
+    rgba(16, 34, 26, 0.42);
+  box-shadow:
+    0 calc(var(--h) * 0.08) calc(var(--h) * 0.18) rgba(16, 34, 26, 0.38),
+    0 calc(var(--h) * 0.24) calc(var(--h) * 0.5) rgba(16, 34, 26, 0.28),
+    0 calc(var(--h) * 0.48) calc(var(--h) * 0.96) rgba(16, 34, 26, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.13),
+    inset 0 calc(var(--h) * -0.02) calc(var(--h) * 0.05)
+      rgba(255, 255, 255, 0.05);
+  transition:
+    box-shadow 0.38s var(--ease),
+    background 0.38s var(--ease);
+  pointer-events: none;
+}
+
+.liquid-stage.hot .liquid-plate {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.105),
+      rgba(255, 255, 255, 0.02) 44%,
+      rgba(255, 255, 255, 0) 64%
+    ),
+    rgba(8, 10, 8, 0.34);
+  box-shadow:
+    0 calc(var(--h) * 0.1) calc(var(--h) * 0.22) rgba(16, 34, 26, 0.44),
+    0 calc(var(--h) * 0.32) calc(var(--h) * 0.66) rgba(16, 34, 26, 0.34),
+    0 calc(var(--h) * 0.66) calc(var(--h) * 1.32) rgba(16, 34, 26, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.17),
+    inset 0 calc(var(--h) * -0.02) calc(var(--h) * 0.05)
+      rgba(255, 255, 255, 0.06);
+}
+
+.liquid-stage.press .liquid-plate {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.07),
+      rgba(255, 255, 255, 0.01) 44%,
+      rgba(255, 255, 255, 0) 64%
+    ),
+    rgba(8, 10, 8, 0.38);
+  box-shadow:
+    0 calc(var(--h) * 0.04) calc(var(--h) * 0.11) rgba(16, 34, 26, 0.46),
+    0 calc(var(--h) * 0.13) calc(var(--h) * 0.32) rgba(16, 34, 26, 0.36),
+    0 calc(var(--h) * 0.27) calc(var(--h) * 0.62) rgba(16, 34, 26, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition-duration: 0.1s;
+}
+
+.liquid-fx {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+.liquid-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  /* fallback (WebGL2 unavailable): a crisp accent pill */
+  height: 54px;
+  padding: 0 1.9rem;
+  gap: 0.65rem;
+  background: var(--accent);
+  color: var(--bg-deep);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.98rem;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  box-shadow: 0 16px 34px -16px rgba(16, 34, 26, 0.6);
+  transition:
+    transform var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+  text-decoration: none;
+}
+
+.liquid-button:hover,
+.liquid-button:focus-visible {
+  transform: translateY(-2px);
+}
+
+.liquid-button:focus-visible {
+  outline: calc(4 * var(--lu)) solid rgba(52, 209, 153, 0.7);
+  outline-offset: calc(10 * var(--lu));
+}
+
+.liquid-button .ico {
+  display: block;
+  flex: none;
+  overflow: visible;
+}
+
+.liquid-button .lbl {
+  display: block;
+}
+
+/* page is unchanged when --lu is undefined (no --h → empty var) */
+.liquid-button--explore .ico {
+  width: 17px;
+  height: 17px;
+}
+
+/* shader live: the liquid metal is painted by the fx canvas; the pill CSS
+   relanguages to the authored metrics (scaled by --lu) and turns transparent */
+.liquid-stage.liquid-on .liquid-button {
+  height: var(--bh);
+  padding: 0 calc(224 * var(--lu)) 0 calc(95 * var(--lu));
+  gap: calc(112 * var(--lu));
+  background: none;
+  color: #ffffff;
+  font-weight: 500;
+  font-size: calc(140 * var(--lu));
+  letter-spacing: 0;
+  box-shadow: none;
+  transform: none;
+}
+
+.liquid-stage.liquid-on .liquid-button--explore {
+  padding: 0 calc(224 * var(--lu)) 0 calc(95 * var(--lu));
+}
+
+.liquid-stage.liquid-on .liquid-button--explore .ico {
+  width: calc(150 * var(--lu));
+  height: calc(150 * var(--lu));
+}
+
+.liquid-stage.liquid-on .liquid-button .lbl {
+  transform: translateY(calc(2 * var(--lu)));
+}
+
+.liquid-stage.liquid-on .liquid-button:hover,
+.liquid-stage.liquid-on .liquid-button:focus-visible {
+  transform: none;
+}
+
+/* ==========================================================================
+   Narrow layout (≤ 900px — matches the scene's NARROW breakpoint)
+   ========================================================================== */
+@media (max-width: 900px) {
+  .sylva-hero {
+    --u: calc(100vw / 760);
+  }
+
+  .liquid-stage--explore {
+    --h: max(calc(74.4152 * var(--u)), 48px);
+  }
+
+  /* hug the pill on phones so the glow margin never overflows 320px */
+  .liquid-stage {
+    --pad: calc(300 * var(--lu));
+  }
+
+  .sylva-stage {
+    left: 0;
+    top: -2%;
+    margin-left: 0;
+    margin-top: 0;
+    width: 100%;
+    height: calc(1625 * var(--u));
+  }
+
+  .sylva-hero__content {
+    min-height: 100svh;
+    justify-content: flex-start;
+    padding-top: clamp(96px, 16vh, 150px);
+  }
+
+  .sylva-hero__veil {
+    background:
+      linear-gradient(
+        190deg,
+        rgba(16, 34, 26, 0.72) 0%,
+        rgba(16, 34, 26, 0.3) 48%,
+        rgba(16, 34, 26, 0) 100%
+      ),
+      linear-gradient(180deg, rgba(16, 34, 26, 0.5) 0%, rgba(16, 34, 26, 0) 26%);
+  }
+
+  .liquid-stage .liquid-plate,
+  .liquid-stage.hot .liquid-plate,
+  .liquid-stage.press .liquid-plate {
+    box-shadow: none;
+  }
+}
+
+/* reduced motion: freeze the liquid loop (renderer already handles it) and
+   make sure nothing pulses needlessly */
+@media (prefers-reduced-motion: reduce) {
+  .sylva-hero .liquid-button,
+  .sylva-hero .liquid-button:hover {
+    transition: none;
+  }
+}

@@ -37,15 +37,9 @@
 
   <link rel="icon" type="image/svg+xml" href="assets/favicon/favicon.svg" />
 
-  <!-- Fonts: Inter with system fallback -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  />
-
+  <!-- Fonts: Lexend self-hosted (no third-party CDN, file:// safe) -->
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/hero.css" />
   <link rel="stylesheet" href="css/animations.css" />
   <link rel="stylesheet" href="css/responsive.css" />
 </head>
@@ -86,9 +80,18 @@
 
   <main id="main-content">
     <!-- ============ HOME / HERO ============ -->
-    <section class="hero" id="home" aria-label="Introduction">
+    <section class="hero sylva-hero" id="home" aria-label="Introduction">
+      <!-- Sylva "Living Green" moss scene — renderer attaches to this canvas -->
+      <canvas id="scene" class="sylva-canvas" aria-hidden="true" tabindex="-1"></canvas>
+
+      <!-- Composition reference frame; the scene is framed on .sylva-hero -->
+      <div class="sylva-stage" id="stage" aria-hidden="true"></div>
+
+      <!-- Legibility scrim that keeps the text readable over the moss -->
+      <div class="sylva-hero__veil" aria-hidden="true"></div>
+
       <div class="container hero__grid">
-        <div class="hero__content">
+        <div class="hero__content sylva-hero__content">
           <p class="hero__eyebrow">Full-Stack Software Engineer</p>
           <h1 class="hero__title">
             Anas Mohammed<br />Idris Mohammed
@@ -100,8 +103,21 @@
             Full-Stack Software Engineer focused on building scalable web applications, backend systems, REST APIs, and business management solutions.
           </p>
 
-          <div class="hero__cta">
-            <a class="btn btn--primary" href="#projects">View My Projects</a>
+          <div class="sylva-hero__cta hero__cta">
+            <span class="liquid-stage liquid-stage--explore" data-liquid-metal="explore">
+              <span class="liquid-plate plate" aria-hidden="true"></span>
+              <canvas class="liquid-fx" aria-hidden="true"></canvas>
+              <a class="liquid-button liquid-button--explore" href="#projects">
+                <svg class="ico" viewBox="0 0 115 115" aria-hidden="true">
+                  <g stroke="currentColor" stroke-width="11" stroke-linecap="round">
+                    <path d="M14 34.5 H101" />
+                    <path d="M14 57.5 H101" />
+                    <path d="M14 80.5 H68" />
+                  </g>
+                </svg>
+                <span class="lbl">Explore My Projects</span>
+              </a>
+            </span>
             <a class="btn btn--ghost" href="#contact">Contact Me</a>
           </div>
 
@@ -113,30 +129,6 @@
             <span class="hero__keyword">PostgreSQL</span>
             <span class="hero__keyword">JavaScript</span>
             <span class="hero__keyword">Software Architecture</span>
-          </div>
-        </div>
-
-        <div class="hero__visual reveal" data-reveal aria-hidden="true">
-          <div class="terminal">
-            <div class="terminal__bar">
-              <span class="terminal__dot"></span>
-              <span class="terminal__dot"></span>
-              <span class="terminal__dot"></span>
-              <span class="terminal__title">software_engineer.py</span>
-            </div>
-            <div class="terminal__body">
-              <code><span class="tk">from</span> <span class="tv">engineer</span> <span class="tk">import</span> <span class="tv">build</span></code>
-              <code class="terminal__line"><span class="tk">def</span> <span class="tf">deliver_solution</span>():</code>
-              <code class="terminal__line"><span class="tp">    analysis</span> <span class="tk">=</span> requirements()</code>
-              <code class="terminal__line"><span class="tp">    design</span> <span class="tk">=</span> architecture()</code>
-              <code class="terminal__line"><span class="tp">    api</span> <span class="tk">=</span> build_rest_api()</code>
-              <code class="terminal__line"><span class="tp">    db</span> <span class="tk">=</span> model_data()</code>
-              <code class="terminal__line"><span class="tp">    deploy</span>(docker, nginx, <span class="tv">gunicorn</span>)</code>
-              <code class="terminal__line"><span class="tk">    return</span> <span class="tv">solution</span></code>
-              <code class="terminal__line"><span class="tc"># Healthcare · Education · Retail · Logistics</span></code>
-              <code class="terminal__line terminal__prompt"><span class="tt">$</span> <span class="tv">deliver_solution()</span></code>
-              <code class="terminal__line terminal__out tk">→ system deployed successfully</code>
-            </div>
           </div>
         </div>
       </div>
@@ -294,12 +286,25 @@
         <span aria-hidden="true">×</span>
       </button>
       <div class="modal__content" data-modal-content></div>
+      <div class="modal__footer">
+        <a class="btn btn--primary btn--sm" href="mailto:anas.moh0147@gmail.com">Start a Project</a>
+      </div>
     </div>
   </div>
 
   <!-- Toast -->
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
+  <!-- Bottom tab bar (mobile) -->
+  <nav class="bottom-tabs" data-bottom-tabs aria-label="Quick navigation">
+    <a href="#home" data-tab>Home</a>
+    <a href="#about" data-tab>About</a>
+    <a href="#skills" data-tab>Skills</a>
+    <a href="#projects" data-tab>Projects</a>
+    <a href="#contact" data-tab>Contact</a>
+  </nav>
+
+  <script src="assets/hero/vendor/three.min.js" defer></script>
   <script src="js/data/personal.js" defer></script>
   <script src="js/data/skills.js" defer></script>
   <script src="js/data/projects.js" defer></script>
@@ -307,6 +312,8 @@
   <script src="js/data/education.js" defer></script>
   <script src="js/data/services.js" defer></script>
   <script src="js/data/social.js" defer></script>
+  <script src="js/hero-scene.js" defer></script>
+  <script src="js/liquid-metal.js" defer></script>
   <script src="js/components.js" defer></script>
   <script src="js/modal.js" defer></script>
   <script src="js/nav.js" defer></script>

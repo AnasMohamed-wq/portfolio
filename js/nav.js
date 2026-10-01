@@ -47,6 +47,11 @@
       navAnchors.forEach(function (a) {
         a.setAttribute("aria-current", a.getAttribute("href") === current ? "true" : "false");
       });
+
+      /* Additive: mirror the highlight onto the mobile bottom tab bar */
+      document.querySelectorAll("[data-tab]").forEach(function (a) {
+        a.setAttribute("aria-current", a.getAttribute("href") === current ? "true" : "false");
+      });
     }
 
     /* toggleMenu(true) opens, toggleMenu(false) closes, no arg toggles */

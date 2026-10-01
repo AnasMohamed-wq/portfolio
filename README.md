@@ -7,12 +7,16 @@ Full-Stack Software Engineer personal portfolio. Static website (HTML5 + CSS3 + 
 ```
 /
 ├── index.html              # Single-page semantic structure
+├── .nojekyll               # Forces GitHub Pages to copy through (file:// safe)
 ├── css/
 │   ├── style.css           # Design system (Forest & Mint), layout, components
+│   ├── hero.css            # Sylva moss scene + liquid-metal CTA (scoped)
 │   ├── animations.css      # Reveal, hero, modal animations + reduced-motion
 │   └── responsive.css      # Mobile-first breakpoints
 ├── js/
 │   ├── main.js             # Entry point: boots render + nav + modal + animations
+│   ├── hero-scene.js       # Sylva "Living Green" Three.js moss scene (hero)
+│   ├── liquid-metal.js     # Liquid-metal CTA renderer (WebGL2)
 │   ├── components.js       # Renders all sections from data files
 │   ├── modal.js            # Project details modal (ESC, click-outside, focus trap)
 │   ├── nav.js              # Sticky navbar, mobile menu, scroll-spy, progress, top
@@ -27,7 +31,10 @@ Full-Stack Software Engineer personal portfolio. Static website (HTML5 + CSS3 + 
 │       └── social.js       # Email, phone, LinkedIn, GitHub, location
 └── assets/
     ├── favicon/favicon.svg
-    └── images/             # (reserved for future use)
+    ├── fonts/lexend-latin.woff2   # Self-hosted Lexend (no CDN)
+    └── hero/
+        ├── vendor/three.min.js     # Local three.js r1xx build
+        └── inner-green-3d.html     # Reference copy of the authored scene page
 ```
 
 ## Run Locally
@@ -66,6 +73,39 @@ To add a project: edit `js/data/projects.js`, follow the existing object shape, 
 
 - No backend, no database, no framework, no ES modules. Pure static site that runs by double-clicking `index.html`.
 - Data lives in `js/data/*.js`, each setting `window.AMData.<name>`; loaded before the render scripts in `index.html`.
-- No invented statistics or testimonials; all content is sourced from the CV.
-- Respects `prefers-reduced-motion`.
+- No invented statistics or testimonials; all content is sourced from the CV. `js/data/*` was **not modified** by the redesign.
+- Respects `prefers-reduced-motion`. Hero scene autoplay pauses when the hero is off-screen or the tab is hidden.
 - Accessible: semantic HTML, ARIA, keyboard navigation, focus states.
+
+## Design Refresh & Hero Upgrade — Change Log
+
+Visual-only restyle + new hero visual layer. No content changes; all original IDs, anchors, and section order preserved.
+
+### What changed
+- **Design system** (`css/style.css`): rebuilt on a light `paper` base with a distinct deep `forest` axis. Token map:
+  - Deep surfaces: `--bg-deep #10221A`, `--surface-deep #19382B`, `--surface-deep-2 #20412F`
+  - Accent mint: `--accent #34D399`, `--accent-hover #2BBF8A`, on-light text `--accent-ink #047857`
+  - Light base: `--paper #F3F8F5`, `--card #FFFFFF`, `--ink #10221A`
+  - Shape: `--r-sm/--r-md/--r-lg/--r-xl/--r-pill`, `--container`, `--section-pad`
+  - Motion: `--ease cubic-bezier(.22,.61,.36,1)`, `--dur-fast 160ms`, `--dur 320ms`, `--dur-slow 600ms`
+  - Elevation: forest-tinted `--shadow-s/m/l` + `--shadow-accent` (no pure-black shadows)
+- **Hero** (`css/hero.css` + `assets/hero/*`): replaced the terminal visual with the **Sylva "Living Green" moss scene** (Three.js WebGL) framed on the existing hero, plus a **liquid-metal "Explore My Projects" CTA** (WebGL2 shader). Hero text, keywords, and the "Contact Me" ghost CTA are unchanged.
+  - `--u` (scene unit grid) is **scoped to `.sylva-hero`** so it cannot affect the rest of the page.
+  - Canvas only becomes visible once the scene boots (`.sylva-hero.is-ready.sylva-scene`); until then / if WebGL is unavailable / under `prefers-reduced-motion`, a static forest-gradient fallback shows.
+- **Header/nav**: now a translucent forest pill that floats over the hero and flips to a paper pill once scrolled (`is-scrolled`).
+- **Mobile**: filter chips scroll horizontally; modal becomes a full-width bottom sheet; a 5-item bottom tab bar (Home/About/Skills/Projects/Contact) appears below 900px and is driven by the existing nav scroll-spy (additive `[data-tab]` mirror).
+- **Modal**: sticky "Start a Project" footer button added (static HTML, no JS logic change).
+- **Performance**: DPR capped at 2 (1.5 on small/mobile screens), render loop pauses off-screen via IntersectionObserver and when the tab is hidden, resize is debounced (120ms), `webglcontextlost` drops the renderer. `window.__AVHeroScene` and `window.__AV_NO_SCENE` are the app hooks; the liquid renderer no-ops when WebGL2 is missing.
+
+### New assets
+- `assets/fonts/lexend-latin.woff2` (self-hosted Lexend — Google Fonts link removed, `file://` friendly)
+- `assets/hero/vendor/three.min.js` (local three.js)
+- `assets/hero/inner-green-3d.html` (reference snapshot of the authored ThreeUI page — **not loaded** by the site)
+- Added runtime weight ≈ 800 KB, dominated by the local three.js build (unavoidable under the no-CDN constraint; the authored scene shipped far heavier remote imagery).
+
+### Could not reproduce exactly (declared divergences)
+- **Registered-source mismatch**: the requested registered bundle snapshot (`sha256 69c3694b…`) is not retrievable; the port was made from the **live** revision `c5de3e42e1a088aeb2fe6a0430dedc03664ed02c59ec0fb9432b5724fb51ed61` of `threeui.com/landing-pages/inner-green-3d.html`.
+- **`.pill-clip` crop frame dropped**: the liquid CTA mounts directly in the hero CTA row (no cropping/clipping frame around it).
+- **DPR on mobile**: author 1.6 → capped to 1.5 per the performance brief.
+- **Liquid CTA label**: "Explore the work" → "Explore My Projects" to match portfolio intent; it is an anchor (`#projects`) rather than a plain button.
+- Authored content only relevant to the Sylva brand (cards, dock nav, filmstrip, stats) was not ported — the hero shows the moss scene + the portfolio's own copy.
