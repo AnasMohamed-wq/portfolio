@@ -9,11 +9,27 @@
   function revealAllFallback() {
     document.querySelectorAll("[data-reveal]").forEach(function (el) {
       el.classList.add("is-revealed");
+      el.style.removeProperty("--reveal-delay");
+    });
+  }
+
+  /* Reveal anything already inside the viewport (used as a failsafe so
+     content is never left invisible if an observer callback goes missing). */
+  function revealInViewport() {
+    if (!document.querySelectorAll) return;
+    document.querySelectorAll("[data-reveal]:not(.is-revealed)").forEach(function (el) {
+      var r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight && r.bottom > 0) {
+        el.classList.add("is-revealed");
+        el.style.removeProperty("--reveal-delay");
+      }
     });
   }
 
   function initAnimations() {
     if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      /* no animations: never leave content hidden */
+      revealAllFallback();
       return;
     }
 
@@ -32,7 +48,7 @@
           }
         });
       },
-      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+      { threshold: 0, rootMargin: "0px 0px -8% 0px" }
     );
 
     entriesObserver = observer;
@@ -41,15 +57,22 @@
       el.style.setProperty("--reveal-delay", (i % 4) * 80 + "ms");
       observer.observe(el);
     });
+
+    /* Failsafe: nothing may remain invisible past ~1.5s */
+    window.setTimeout(revealInViewport, 1500);
+    window.addEventListener("pageshow", revealInViewport);
   }
 
   /* Re-observe newly rendered dynamic content (e.g. after filtering) */
   function observeReveal() {
-    if (entriesObserver) {
-      document.querySelectorAll("[data-reveal]:not(.is-revealed)").forEach(function (el) {
-        entriesObserver.observe(el);
-      });
+    if (!entriesObserver) {
+      revealAllFallback();
+      return;
     }
+    document.querySelectorAll("[data-reveal]:not(.is-revealed)").forEach(function (el) {
+      el.style.removeProperty("--reveal-delay");
+      entriesObserver.observe(el);
+    });
   }
 
   window.AMAnimations = {

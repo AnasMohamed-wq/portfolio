@@ -109,3 +109,15 @@ Visual-only restyle + new hero visual layer. No content changes; all original ID
 - **DPR on mobile**: author 1.6 → capped to 1.5 per the performance brief.
 - **Liquid CTA label**: "Explore the work" → "Explore My Projects" to match portfolio intent; it is an anchor (`#projects`) rather than a plain button.
 - Authored content only relevant to the Sylva brand (cards, dock nav, filmstrip, stats) was not ported — the hero shows the moss scene + the portfolio's own copy.
+
+## Post-deploy Audit — Change Log (2026-10-01)
+
+Behaviour-only fixes after the first GitHub Pages deploy (`/portfolio/`). Content, data, section order, and element IDs unchanged; no markup/data edits.
+
+### Root causes fixed
+- **Mobile menu mispositioned / half-width / transparent**: `backdrop-filter` on `.site-header .nav` made it the containing block for the `position: fixed` panel, so the panel laid out relative to the nav box instead of the viewport. The pill's glass now lives on a `.nav::before` (z-index −1); the open panel is `position: fixed; inset: 0`, opaque `--bg-deep`, `100dvh`, `overflow-y: auto` + `overscroll-behavior: contain`, closed with `translateX(100%) + visibility: hidden + inert` (no horizontal scrollbar, no tabbable content while closed).
+- **Invisible sections on some phones**: reveals only start hidden when `.js` is present on `<html>` (set inline in `<head>`), observer now `threshold: 0` with a 1.5s in-viewport failsafe + `pageshow` recovery, reduced-motion unveils everything, and each boot module runs in its own `try/catch` (one bad module can no longer blank the site).
+- **Header/bottom-bar contrast**: the mobile header is always a dark opaque pill with light text (also when scrolled); the bottom tab bar is dark `--surface-deep` (~0.95), labels 0.72rem, accent active state, 44px touch targets, safe-area padding, and hides while the menu or modal is open.
+- **Hero seam**: `100svh` now guarded by a `100vh` fallback; the bottom gradient seam is preserved.
+- **Desktop white background lost after deploy**: deployed HTML/CSS were verified **identical** to the working tree (CRLF-normalized diff, balanced braces, no `prefers-color-scheme`) → stale client cache. Fix = cache-busting `?v=20261001` on all CSS/JS links; also added `viewport-fit=cover`.
+- Added a z-index token scale (`--z-back-top` … `--z-skip`) to replace scattered literals.

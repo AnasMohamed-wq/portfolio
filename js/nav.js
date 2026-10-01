@@ -58,14 +58,34 @@
     function toggleMenu(open) {
       if (!toggle || !links) return;
       var willOpen = typeof open === "boolean" ? open : !links.classList.contains("is-open");
+
       toggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
       links.classList.toggle("is-open", willOpen);
       document.body.classList.toggle("nav-open", willOpen);
+      document.documentElement.classList.toggle("nav-open", willOpen);
+
+      if (willOpen) {
+        links.setAttribute("aria-hidden", "false");
+        links.removeAttribute("inert");
+      } else {
+        /* unreachable while closed: hidden off-canvas, inert, out of tab order */
+        links.setAttribute("aria-hidden", "true");
+        links.setAttribute("inert", "");
+        if (document.activeElement && links.contains(document.activeElement)) {
+          toggle.focus();
+        }
+      }
     }
 
     if (toggle) {
       toggle.addEventListener("click", function () { toggleMenu(); });
     }
+
+    /* Close the full-screen panel when the layout switches to desktop */
+    var desktopQuery = window.matchMedia("(min-width: 768px)");
+    function closeOnDesktop(e) { if (e.matches) toggleMenu(false); }
+    if (desktopQuery.addEventListener) desktopQuery.addEventListener("change", closeOnDesktop);
+    else if (desktopQuery.addListener) desktopQuery.addListener(closeOnDesktop);
 
     navAnchors.forEach(function (a) {
       a.addEventListener("click", function () { toggleMenu(false); });

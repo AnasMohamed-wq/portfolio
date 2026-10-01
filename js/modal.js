@@ -76,6 +76,7 @@
 
     modal.classList.remove("is-closing");
     modal.hidden = false;
+    document.body.classList.add("modal-open");
 
     var closeBtn = modal.querySelector(".modal__close");
     if (closeBtn) requestAnimationFrame(function () { closeBtn.focus(); });
@@ -90,6 +91,7 @@
     setTimeout(function () {
       modal.hidden = true;
       modal.classList.remove("is-closing");
+      document.body.classList.remove("modal-open");
       document.body.style.overflow = "";
       if (lastFocused && typeof lastFocused.focus === "function") lastFocused.focus();
     }, 210);

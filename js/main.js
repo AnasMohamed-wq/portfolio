@@ -44,11 +44,14 @@
   function boot() {
     if (boot._done) return;
     boot._done = true;
-    AM.renderAll();
-    AMNav.initNav();
-    AMModal.initModal();
-    initFilters();
-    AMAnimations.initAnimations();
+
+    /* Each module initialises independently so one failure never blanks
+       the rest of the site (modules already guard on missing DOM nodes). */
+    try { AM.renderAll(); } catch (err) { console.error("renderAll:", err); }
+    try { AMNav.initNav(); } catch (err) { console.error("initNav:", err); }
+    try { AMModal.initModal(); } catch (err) { console.error("initModal:", err); }
+    try { initFilters(); } catch (err) { console.error("initFilters:", err); }
+    try { AMAnimations.initAnimations(); } catch (err) { console.error("initAnimations:", err); }
   }
 
   if (document.readyState === "loading") {

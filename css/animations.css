@@ -1,9 +1,11 @@
 /* ============================================================
    Animations — reveal, staggered cards, hero intro, modal
+   Reveal elements only start hidden when JS is active (the `.js`
+   class is added to <html> in <head>); without JS nothing hides.
    ============================================================ */
 
 /* ---------- Reveal (IntersectionObserver) ---------- */
-[data-reveal] {
+.js [data-reveal] {
   opacity: 0;
   transform: translateY(26px);
   transition: opacity 620ms var(--ease), transform 620ms var(--ease);
@@ -11,35 +13,35 @@
   will-change: opacity, transform;
 }
 
-[data-reveal].is-revealed {
+.js [data-reveal].is-revealed {
   opacity: 1;
   transform: translateY(0);
 }
 
-[data-reveal="fade"] {
+.js [data-reveal="fade"] {
   transform: none;
 }
 
-[data-reveal="left"] {
+.js [data-reveal="left"] {
   transform: translateX(-24px);
 }
 
-[data-reveal="right"] {
+.js [data-reveal="right"] {
   transform: translateX(24px);
 }
 
-[data-reveal].is-revealed {
+.js [data-reveal].is-revealed {
   transform: none;
 }
 
 /* Staggered children reveal */
-.stagger > * {
+.js .stagger > * {
   opacity: 0;
   transform: translateY(22px);
   transition: opacity 520ms var(--ease), transform 520ms var(--ease);
 }
 
-.stagger.is-revealed > * {
+.js .stagger.is-revealed > * {
   opacity: 1;
   transform: translateY(0);
 }
@@ -146,8 +148,8 @@
     transition-duration: 0.01ms !important;
   }
 
-  [data-reveal],
-  .stagger > *,
+  .js [data-reveal],
+  .js .stagger > *,
   .hero__content > * {
     opacity: 1 !important;
     transform: none !important;

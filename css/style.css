@@ -48,6 +48,17 @@
   --dur: 320ms;
   --dur-slow: 600ms;
 
+  /* z-index scale */
+  --z-back-top: 110;
+  --z-bottom-tabs: 115;
+  --z-header: 120;
+  --z-menu: 130;
+  --z-progress: 140;
+  --z-header-open: 150;
+  --z-modal: 200;
+  --z-toast: 250;
+  --z-skip: 300;
+
   /* Elevation (forest-tinted, no pure-black shadows) */
   --shadow-s: 0 10px 24px -18px rgba(16, 34, 26, 0.14);
   --shadow-m: 0 22px 44px -24px rgba(16, 34, 26, 0.18);
@@ -74,10 +85,14 @@ html {
   scroll-behavior: smooth;
   scroll-padding-top: 96px;
   -webkit-text-size-adjust: 100%;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 body {
   font-family: var(--font);
+  max-width: 100%;
+  overflow-x: clip;
   background-color: var(--paper);
   background-image: radial-gradient(
     ellipse 90% 60% at 50% -10%,
@@ -90,7 +105,14 @@ body {
   font-size: 1rem;
   font-weight: 300;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow-x: clip;
+}
+
+@supports not (overflow-x: clip) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
 }
 
 h1,
@@ -288,7 +310,7 @@ button.btn {
   position: absolute;
   top: -100px;
   left: 1rem;
-  z-index: 300;
+  z-index: var(--z-skip);
   background: var(--accent);
   color: var(--bg-deep);
   padding: 0.6rem 1.1rem;
@@ -308,7 +330,7 @@ button.btn {
   left: 0;
   right: 0;
   height: 3px;
-  z-index: 140;
+  z-index: var(--z-progress);
   pointer-events: none;
   background: transparent;
 }
@@ -327,11 +349,15 @@ button.btn {
 .site-header {
   position: sticky;
   top: 12px;
-  z-index: 120;
+  z-index: var(--z-header);
   padding-inline: 0;
 }
 
+/* The pill's glass lives on a child pseudo-element — `backdrop-filter`
+   directly on .nav would make it the containing block for the panel's
+   `position: fixed` descendants and break the full-screen mobile menu. */
 .site-header .nav {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -339,20 +365,31 @@ button.btn {
   min-height: 62px;
   padding: 0.55rem 0.65rem 0.55rem 1.35rem;
   border-radius: var(--r-pill);
+  border: 1px solid rgba(243, 248, 245, 0.12);
+  transition: border-color var(--dur) var(--ease);
+}
+
+.site-header .nav::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
   background: rgba(24, 40, 31, 0.42);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
-  border: 1px solid rgba(243, 248, 245, 0.12);
   box-shadow: 0 18px 44px -22px rgba(16, 34, 26, 0.55);
   transition:
     background-color var(--dur) var(--ease),
-    border-color var(--dur) var(--ease),
     box-shadow var(--dur) var(--ease);
 }
 
 .site-header.is-scrolled .nav {
-  background: rgba(246, 251, 247, 0.88);
   border-color: var(--line);
+}
+
+.site-header.is-scrolled .nav::before {
+  background: rgba(246, 251, 247, 0.88);
   box-shadow: var(--shadow-m);
 }
 
@@ -456,7 +493,7 @@ button.btn {
   background: none;
   border: 0;
   padding: 0.5rem;
-  z-index: 150;
+  z-index: var(--z-header-open);
 }
 
 .nav__toggle-line {
@@ -696,6 +733,7 @@ button.btn {
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--r-pill);
+  min-height: 40px;
   padding: 0.5rem 1.1rem;
   transition:
     color var(--dur) var(--ease),
@@ -1288,6 +1326,7 @@ button.btn {
   font-weight: 400;
   color: var(--text-on-dark);
   word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .contact__cta {
@@ -1373,7 +1412,7 @@ button.btn {
   position: fixed;
   right: 1.25rem;
   bottom: 1.25rem;
-  z-index: 110;
+  z-index: var(--z-back-top);
   width: 46px;
   height: 46px;
   border-radius: 50%;
@@ -1411,7 +1450,7 @@ button.btn {
 .modal {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1449,8 +1488,8 @@ button.btn {
   float: right;
   margin: 0.9rem 0.9rem -2.6rem 0;
   z-index: 2;
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.92);
@@ -1582,7 +1621,7 @@ button.btn {
   bottom: 1.5rem;
   left: 50%;
   transform: translateX(-50%) translateY(16px);
-  z-index: 250;
+  z-index: var(--z-toast);
   background: var(--card);
   border: 1px solid var(--line-strong);
   color: var(--ink);
@@ -1609,23 +1648,21 @@ button.btn {
 }
 
 /* ============================================================
-   Bottom tab bar (mobile, optional)
+   Bottom tab bar (mobile only)
    ============================================================ */
 .bottom-tabs {
   position: fixed;
   left: 12px;
   right: 12px;
   bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-  z-index: 115;
+  z-index: var(--z-bottom-tabs);
   display: none;
   grid-template-columns: repeat(5, 1fr);
   gap: 4px;
-  padding: 8px;
+  padding: 6px 8px 8px;
   border-radius: var(--r-xl);
-  background: rgba(243, 248, 245, 0.9);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-  border: 1px solid var(--line);
+  background: rgba(25, 56, 43, 0.95);
+  border: 1px solid var(--line-dark);
   box-shadow: var(--shadow-m);
 }
 
@@ -1633,11 +1670,13 @@ button.btn {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 3px;
+  min-height: 44px;
   padding: 6px 4px;
   border-radius: var(--r-md);
-  color: var(--ink-muted);
-  font-size: 0.68rem;
+  color: rgba(243, 248, 245, 0.78);
+  font-size: 0.72rem;
   font-weight: 500;
   letter-spacing: 0.02em;
   transition:
@@ -1645,15 +1684,21 @@ button.btn {
     background-color var(--dur) var(--ease);
 }
 
+.bottom-tabs a:hover,
+.bottom-tabs a[aria-current="true"] {
+  color: var(--bg-deep);
+  background: var(--accent);
+}
+
 .bottom-tabs a svg {
   width: 20px;
   height: 20px;
 }
 
-.bottom-tabs a:hover,
-.bottom-tabs a[aria-current="true"] {
-  color: var(--accent-ink);
-  background: var(--accent-soft);
+/* hidden while the mobile menu or the project modal is open */
+body.nav-open .bottom-tabs,
+body.modal-open .bottom-tabs {
+  display: none;
 }
 
 @media (max-width: 900px) {

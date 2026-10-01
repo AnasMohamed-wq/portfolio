@@ -14,22 +14,39 @@
   grid-template-columns: 1fr;
 }
 
+/* Off-canvas mobile menu — `position: fixed` is relative to the VIEWPORT
+   (the header pill's backdrop-filter now lives on .site-header .nav::before,
+   which no longer makes .nav the containing block). */
 .nav__links {
   position: fixed;
   inset: 0;
   flex-direction: column;
   justify-content: center;
   gap: 1.3rem;
-  background: rgba(16, 34, 26, 0.97);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
+  padding: 5.5rem clamp(16px, 4vw, 40px) 4.5rem;
+  background: var(--bg-deep);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   transform: translateX(100%);
-  transition: transform 320ms var(--ease);
-  z-index: 130;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 320ms var(--ease),
+    opacity 220ms var(--ease),
+    visibility 0s linear 320ms;
+  z-index: var(--z-menu);
 }
 
 .nav__links.is-open {
   transform: translateX(0);
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transition:
+    transform 320ms var(--ease),
+    opacity 220ms var(--ease),
+    visibility 0s;
 }
 
 /* Inside the dark overlay the link colors stay on-dark regardless of header state */
@@ -39,6 +56,8 @@
 }
 
 .nav__links .nav__link--cta {
+  margin-top: 0.5rem;
+  padding: 0.65rem 1.6rem;
   border: 1px solid var(--line-dark-strong);
   color: var(--text-on-dark);
 }
@@ -51,7 +70,11 @@
 
 .nav__toggle {
   display: flex;
-  z-index: 140;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  z-index: var(--z-header-open);
 }
 
 .nav__toggle[aria-expanded="true"] .nav__toggle-line:nth-child(1) {
@@ -66,7 +89,8 @@
   transform: translateY(-7px) rotate(-45deg);
 }
 
-body.nav-open {
+body.nav-open,
+html.nav-open {
   overflow: hidden;
 }
 
@@ -84,11 +108,13 @@ body.nav-open {
   height: 11px;
 }
 
-/* Filter chips scroll horizontally on small screens */
+/* Filter chips scroll horizontally (with snap) on small screens */
 .filters {
   flex-wrap: nowrap;
   overflow-x: auto;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
   margin-inline: calc(-1 * clamp(16px, 4vw, 40px));
   padding-inline: clamp(16px, 4vw, 40px);
 }
@@ -99,6 +125,7 @@ body.nav-open {
 
 .filter-btn {
   flex-shrink: 0;
+  scroll-snap-align: start;
 }
 
 .hero__cta {
@@ -191,10 +218,13 @@ body.nav-open {
     justify-content: flex-end;
     gap: 0.4rem;
     background: none;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
     transform: none;
     transition: none;
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    overflow: visible;
+    padding: 0;
   }
 
   .nav__links .nav__link {
@@ -298,32 +328,53 @@ body.nav-open {
 }
 
 /* ============================================================
-   Mobile menu fix — opaque panel, visible links (phones only)
+   Mobile (phones only) — header always a dark pill; menu state
    ============================================================ */
 @media (max-width: 767.98px) {
-  /* لا تدع الـ header يحصر القائمة داخله عند فتحها */
+  /* Header above the open menu so the close (X) stays visible */
   body.nav-open .site-header {
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    transform: none;
-    filter: none;
-    z-index: 1000;
+    z-index: var(--z-header-open);
   }
 
-  /* خلفية صلبة غير شفافة تغطي الشاشة كاملة */
-  .nav__links {
-    background: #10221a;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    height: 100vh;
-    height: 100dvh;
-    opacity: 1;
+  body.nav-open .site-header .nav::before {
+    background: var(--bg-deep);
+    box-shadow: none;
   }
 
-  /* ألوان الروابط ثابتة وواضحة سواء كان الـ header ممرَّراً أم لا */
+  /* Header is dark + light text at all times on phones (no grey glass) */
+  .site-header .nav {
+    border-color: var(--line-dark-strong);
+  }
+
+  .site-header .nav::before,
+  .site-header.is-scrolled .nav::before {
+    background: rgba(25, 56, 43, 0.94);
+  }
+
+  .site-header.is-scrolled .nav {
+    border-color: var(--line-dark);
+  }
+
+  .site-header .nav__brand,
+  .site-header.is-scrolled .nav__brand {
+    color: var(--text-on-dark);
+  }
+
+  .site-header .nav__logo,
+  .site-header.is-scrolled .nav__logo {
+    color: var(--accent);
+    border-color: var(--line-dark-strong);
+    background: var(--accent-soft);
+  }
+
+  .site-header .nav__toggle-line,
+  .site-header.is-scrolled .nav__toggle-line {
+    background: var(--text-on-dark);
+  }
+
   .site-header .nav__links .nav__link,
   .site-header.is-scrolled .nav__links .nav__link {
-    color: var(--text-on-dark-muted, rgba(243, 248, 245, 0.78));
+    color: var(--text-on-dark-muted);
   }
 
   .site-header .nav__links .nav__link:hover,
@@ -337,11 +388,19 @@ body.nav-open {
   .site-header .nav__links .nav__link--cta,
   .site-header.is-scrolled .nav__links .nav__link--cta {
     color: var(--text-on-dark);
-    border: 1px solid var(--line-dark-strong);
+    border-color: var(--line-dark-strong);
   }
 
-  /* زر الإغلاق (X) يبقى ظاهراً فوق القائمة */
-  body.nav-open .nav__toggle .nav__toggle-line {
-    background: var(--text-on-dark, #f3f8f5);
+  body.nav-open .nav__toggle .nav__toggle-line,
+  body.nav-open .site-header.is-scrolled .nav__toggle-line {
+    background: var(--text-on-dark);
+  }
+}
+
+/* reduced-motion: no slide transition on the menu */
+@media (prefers-reduced-motion: reduce) {
+  .nav__links,
+  .nav__links.is-open {
+    transition: none;
   }
 }
